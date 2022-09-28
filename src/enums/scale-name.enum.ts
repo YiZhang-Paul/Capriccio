@@ -1,3 +1,3 @@
-export enum Scale {
+export enum ScaleName {
     DMajor = 'D major'
 }

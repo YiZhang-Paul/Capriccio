@@ -1,5 +1,5 @@
 export enum Accidental {
-    None = '',
+    None = ' ',
     Flat = 'b',
     Natural = 'n',
     Sharp = '#'
