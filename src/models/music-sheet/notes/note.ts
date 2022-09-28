@@ -1,6 +1,6 @@
 import type { NoteName } from '@/enums/note-name.enum';
 import type { OctaveRegister } from '@/enums/octave-register.enum';
-import type { Accidental } from '@/enums/accidental.enum';
+import { Accidental } from '@/enums/accidental.enum';
 import type { NoteValue } from '@/enums/note-value.enum';
 
 export abstract class Note {
@@ -14,5 +14,9 @@ export abstract class Note {
         this.octave = octave;
         this.accidental = accidental;
         this.value = value;
+    }
+
+    get hasAccidental(): boolean {
+        return this.accidental !== Accidental.None;
     }
 }
