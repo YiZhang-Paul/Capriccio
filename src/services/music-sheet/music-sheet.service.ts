@@ -1,11 +1,9 @@
-import { scales } from '@/constants/scales';
+import { keySignatures } from '@/constants/key-signatures';
 import type { Note } from '@/models/music-sheet/notes/note';
-import type { Scale } from '@/models/music-sheet/generic/scale';
+import type { KeySignature } from '@/models/music-sheet/generic/key-signature';
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import type { MeasureDescriptor } from '@/models/music-sheet/descriptors/measure-descriptor';
 import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
-import { ScaleType } from '@/enums/scale-type.enum';
-import { Accidental } from '@/enums/accidental.enum';
 
 export class MusicSheetService {
 
@@ -13,35 +11,34 @@ export class MusicSheetService {
         const noteDescriptors = sheet.measureDescriptors.map(_ => _.noteDescriptors).flat();
         noteDescriptors.forEach(_ => _.override.accidental = undefined);
         this.overrideAccidentalsByMeasure(sheet.measureDescriptors);
-        this.overrideAccidentalsByScale(noteDescriptors, scales[sheet.scale]);
+        this.overrideAccidentalsByKeySignature(noteDescriptors, keySignatures.find(_ => _.name === sheet.keySignature)!);
     }
 
     private overrideAccidentalsByMeasure(measureDescriptors: MeasureDescriptor[]): void {
         for (const measureDescriptor of measureDescriptors) {
-            const seen = new Map();
+            const overrides = new Map();
 
             for (const { base, override } of measureDescriptor.noteDescriptors) {
                 const note = `${base.name}${base.octave}`;
 
-                if (!base.hasAccidental && seen.has(note)) {
-                    override.accidental = seen.get(note);
+                if (!base.hasAccidental && overrides.has(note)) {
+                    override.accidental = overrides.get(note);
                 }
-
-                if (base.hasAccidental) {
-                    seen.set(note, base.accidental);
+                else if (base.hasAccidental) {
+                    overrides.set(note, base.accidental);
                 }
             }
         }
     }
 
-    private overrideAccidentalsByScale<T extends Note>(noteDescriptors: NoteDescriptor<T>[], scale: Scale): void {
-        const { type, notes } = scale;
+    private overrideAccidentalsByKeySignature<T extends Note>(noteDescriptors: NoteDescriptor<T>[], keySignature: KeySignature): void {
+        const { accidental, notes } = keySignature;
 
         for (const { base, override } of noteDescriptors) {
             const canOverride = !base.hasAccidental && !override.accidental;
 
             if (canOverride && notes.has(base.name)) {
-                override.accidental = type === ScaleType.Major ? Accidental.Sharp : Accidental.Flat;
+                override.accidental = accidental;
             }
         }
     }

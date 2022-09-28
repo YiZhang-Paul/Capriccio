@@ -1,14 +1,14 @@
-import type { ScaleName } from '@/enums/scale-name.enum';
+import type { KeySignatureName } from '@/enums/key-signature-name.enum';
 
 import type { MeasureDescriptor } from './measure-descriptor';
 
 export class SheetDescriptor {
-    public scale: ScaleName;
+    public keySignature: KeySignatureName;
     public tempo: number;
     public measureDescriptors: MeasureDescriptor[];
 
-    constructor(scale: ScaleName, tempo = 60, measureDescriptors: MeasureDescriptor[] = []) {
-        this.scale = scale;
+    constructor(keySignature: KeySignatureName, tempo = 60, measureDescriptors: MeasureDescriptor[] = []) {
+        this.keySignature = keySignature;
         this.tempo = tempo;
         this.measureDescriptors = measureDescriptors;
     }

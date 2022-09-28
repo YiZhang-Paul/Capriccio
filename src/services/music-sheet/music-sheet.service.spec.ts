@@ -7,7 +7,7 @@ import { HalfNote } from '@/models/music-sheet/notes/half-note';
 import { NoteName } from '@/enums/note-name.enum';
 import { OctaveRegister } from '@/enums/octave-register.enum';
 import { Accidental } from '@/enums/accidental.enum';
-import { ScaleName } from '@/enums/scale-name.enum';
+import { KeySignatureName } from '@/enums/key-signature-name.enum';
 
 import { MusicSheetService } from './music-sheet.service';
 
@@ -22,7 +22,7 @@ describe('music sheet service unit test', () => {
         let sheet: SheetDescriptor;
 
         beforeEach(() => {
-            sheet = new SheetDescriptor(ScaleName.DMajor);
+            sheet = new SheetDescriptor(KeySignatureName.DMajor);
         });
 
         test('should apply accidentals specified explicitly', () => {
