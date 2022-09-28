@@ -10,6 +10,7 @@ export class MusicSheetService {
     public overrideAccidentals(sheet: SheetDescriptor): void {
         const noteDescriptors = sheet.measureDescriptors.map(_ => _.noteDescriptors).flat();
         noteDescriptors.forEach(_ => _.override.accidental = undefined);
+        // explicit accidentals must be applied before accidentals from key signature
         this.overrideAccidentalsByMeasure(sheet.measureDescriptors);
         this.overrideAccidentalsByKeySignature(noteDescriptors, keySignatures.find(_ => _.name === sheet.keySignature)!);
     }
