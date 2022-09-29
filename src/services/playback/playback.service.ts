@@ -1,10 +1,10 @@
 import { Part, Synth, Time, Transport } from 'tone';
 
 import type { Note } from '@/models/music-sheet/notes/note';
-import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import { ToneOption } from '@/models/playback/options/tone-option';
 import { PlaybackInstruction } from '@/models/playback/playback-instruction';
+import { NoteValue } from '@/enums/note-value.enum';
 
 import { NoteService } from '../note/note.service';
 import { ToneService } from '../tone/tone.service';
@@ -38,9 +38,9 @@ export class PlaybackService {
         const noteDescriptors = sheet.measureDescriptors.map(_ => _.noteDescriptors).flat();
 
         for (const noteDescriptor of noteDescriptors) {
-            const option = new ToneOption(noteService.getDefaultString(noteDescriptor));
+            const option = new ToneOption(noteService.getDefaultString(noteDescriptor), noteService.getDefaultVibrato(noteDescriptor));
             sets.push([`0:${beats}`, new PlaybackInstruction(noteDescriptor, option)]);
-            beats += noteService.getTotalBeats(noteDescriptor);
+            beats += noteService.getTotalBeats(noteDescriptor, NoteValue.Quarter);
         }
 
         return sets;

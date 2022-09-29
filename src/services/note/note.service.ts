@@ -4,6 +4,7 @@ import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descr
 import { NoteValue } from '@/enums/note-value.enum';
 import { Accidental } from '@/enums/accidental.enum';
 import { StringName } from '@/enums/string-name.enum';
+import { VibratoType } from '@/enums/vibrato-type.enum';
 
 export class NoteService {
 
@@ -15,12 +16,12 @@ export class NoteService {
         return `${base.name}${isNatural ? '' : accidental}${base.octave}`;
     }
 
-    public getTotalBeats(noteDescriptor: NoteDescriptor<Note>): number {
+    public getTotalBeats(noteDescriptor: NoteDescriptor<Note>, beatType: NoteValue): number {
         const { base, option } = noteDescriptor;
         const dots = option.dots ?? 0;
         const multiplier = new Array(dots).fill(null).reduce((total, _, index) => total + Math.pow(0.5, index + 1), 1);
 
-        return NoteValue.Quarter / base.value * multiplier;
+        return beatType / base.value * multiplier;
     }
 
     public getDefaultString(noteDescriptor: NoteDescriptor<Note>): StringName {
@@ -35,6 +36,20 @@ export class NoteService {
 
             return this.containsNote(noteDescriptor.base, lowest, thirdPositionHighest);
         })!;
+    }
+
+    public getDefaultVibrato(noteDescriptor: NoteDescriptor<Note>): VibratoType | null {
+        const { value } = noteDescriptor.base;
+
+        if (value > NoteValue.Eighth) {
+            return null;
+        }
+
+        if (value === NoteValue.Eighth) {
+            return VibratoType.Narrow;
+        }
+
+        return value === NoteValue.Quarter ? VibratoType.Soft : VibratoType.Wide;
     }
 
     private getRank(note: Note): number {
