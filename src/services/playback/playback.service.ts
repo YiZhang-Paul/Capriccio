@@ -1,31 +1,23 @@
-import { Part, Synth, Time, Transport, Vibrato, type SynthOptions } from 'tone';
+import { Part, Synth, Time, Transport } from 'tone';
 
-import { stringConfigurations } from '@/constants/string-configurations';
-import { vibratoConfigurations } from '@/constants/vibrato-configurations';
 import type { Note } from '@/models/music-sheet/notes/note';
 import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import { ToneOption } from '@/models/playback/options/tone-option';
-import { EffectAggregate } from '@/models/playback/effect-aggregate';
 import { PlaybackInstruction } from '@/models/playback/playback-instruction';
-import type { VibratoType } from '@/enums/vibrato-type.enum';
 import { NoteValue } from '@/enums/note-value.enum';
 import { Accidental } from '@/enums/accidental.enum';
 
-let synths: Synth[] = [];
+import { ToneService } from '../tone/tone.service';
+
+const toneService = new ToneService();
 
 export class PlaybackService {
-    private effects = new EffectAggregate();
 
     public play(sheet: SheetDescriptor): void {
-        const instructionSets = this.getInstructionSets(sheet);
         this.stop();
-
-        if (!synths.length) {
-            const option = { oscillator: { spread: 30 } } as SynthOptions;
-            synths = [new Synth(option).toDestination(), new Synth(option).toDestination()];
-        }
-
+        const synths = toneService.initialize(2);
+        const instructionSets = this.getInstructionSets(sheet);
         const even = instructionSets.filter((_, index) => index % 2 === 0);
         const odd = instructionSets.filter((_, index) => index % 2 === 1);
         new Part((time, instruction) => this.processInstruction(synths[0], time, instruction), even).start(0);
@@ -38,9 +30,6 @@ export class PlaybackService {
         if (Transport.state !== 'stopped') {
             Transport.stop();
         }
-
-        synths.forEach(_ => _.dispose());
-        synths = [];
     }
 
     private getInstructionSets(sheet: SheetDescriptor): [string, PlaybackInstruction<Note>][] {
@@ -64,7 +53,7 @@ export class PlaybackService {
         // add overlap between notes for smoother transition
         const duration = Time(this.getNoteDurationString(noteDescriptor)).toSeconds() + 0.05;
         synth.triggerAttackRelease(this.getNoteDisplayString(noteDescriptor), duration, time);
-        this.configureTone(synth, toneOption);
+        toneService.configure(synth, toneOption);
     }
 
     private getNoteDisplayString(noteDescriptor: NoteDescriptor<Note>): string {
@@ -80,31 +69,5 @@ export class PlaybackService {
         const dots = '.'.repeat(option.dots ?? 0);
 
         return `${base.value}n${dots}`;
-    }
-
-    private configureTone(synth: Synth, toneOption: ToneOption): void {
-        const { string, vibrato } = toneOption;
-        const { type, volume } = stringConfigurations[string];
-        synth.oscillator.type = type;
-        synth.oscillator.volume.value = volume;
-
-        if (vibrato) {
-            this.enableVibrato(synth, vibrato);
-        }
-        else {
-            this.disableVibrato();
-        }
-    }
-
-    private enableVibrato(synth: Synth, type: VibratoType): void {
-        this.disableVibrato();
-        const { frequency, depth } = vibratoConfigurations[type];
-        this.effects.vibrato = new Vibrato(frequency, depth).toDestination();
-        synth.fan(this.effects.vibrato);
-    }
-
-    private disableVibrato(): void {
-        this.effects.vibrato?.dispose();
-        this.effects.vibrato = null;
     }
 }
