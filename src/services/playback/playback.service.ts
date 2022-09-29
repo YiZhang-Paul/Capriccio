@@ -4,6 +4,7 @@ import type { Note } from '@/models/music-sheet/notes/note';
 import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import { ToneOption } from '@/models/playback/options/tone-option';
+import { EffectAggregate } from '@/models/playback/effect-aggregate';
 import { PlaybackInstruction } from '@/models/playback/playback-instruction';
 import { NoteValue } from '@/enums/note-value.enum';
 import { Accidental } from '@/enums/accidental.enum';
@@ -13,7 +14,7 @@ import { VibratoType } from '@/enums/vibrato-type.enum';
 let synths: Synth[] = [];
 
 export class PlaybackService {
-    private effects: { vibrato: Vibrato | null } = { vibrato: null };
+    private effects = new EffectAggregate();
 
     public play(sheet: SheetDescriptor): void {
         const instructionSets = this.getInstructionSets(sheet);
