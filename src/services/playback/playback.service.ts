@@ -1,15 +1,16 @@
 import { Part, Synth, Time, Transport, Vibrato, type SynthOptions } from 'tone';
 
+import { stringConfigurations } from '@/constants/string-configurations';
+import { vibratoConfigurations } from '@/constants/vibrato-configurations';
 import type { Note } from '@/models/music-sheet/notes/note';
 import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import { ToneOption } from '@/models/playback/options/tone-option';
 import { EffectAggregate } from '@/models/playback/effect-aggregate';
 import { PlaybackInstruction } from '@/models/playback/playback-instruction';
+import type { VibratoType } from '@/enums/vibrato-type.enum';
 import { NoteValue } from '@/enums/note-value.enum';
 import { Accidental } from '@/enums/accidental.enum';
-import { StringName } from '@/enums/string-name.enum';
-import { VibratoType } from '@/enums/vibrato-type.enum';
 
 let synths: Synth[] = [];
 
@@ -83,23 +84,9 @@ export class PlaybackService {
 
     private configureTone(synth: Synth, toneOption: ToneOption): void {
         const { string, vibrato } = toneOption;
-
-        if (string === StringName.G) {
-            synth.oscillator.type = 'amtriangle32';
-            synth.oscillator.volume.value = 4;
-        }
-        else if (string === StringName.D) {
-            synth.oscillator.type = 'amtriangle20';
-            synth.oscillator.volume.value = 2;
-        }
-        else if (string === StringName.A) {
-            synth.oscillator.type = 'amtriangle10';
-            synth.oscillator.volume.value = 2;
-        }
-        else if (string === StringName.E) {
-            synth.oscillator.type = 'amtriangle';
-            synth.oscillator.volume.value = 3;
-        }
+        const { type, volume } = stringConfigurations[string];
+        synth.oscillator.type = type;
+        synth.oscillator.volume.value = volume;
 
         if (vibrato) {
             this.enableVibrato(synth, vibrato);
@@ -110,14 +97,8 @@ export class PlaybackService {
     }
 
     private enableVibrato(synth: Synth, type: VibratoType): void {
-        const configs = {
-            [VibratoType.Wide]: { frequency: 6, depth: 0.025 },
-            [VibratoType.Soft]: { frequency: 7.5, depth: 0.02 },
-            [VibratoType.Narrow]: { frequency: 8.5, depth: 0.0015 }
-        };
-
         this.disableVibrato();
-        const { frequency, depth } = configs[type];
+        const { frequency, depth } = vibratoConfigurations[type];
         this.effects.vibrato = new Vibrato(frequency, depth).toDestination();
         synth.fan(this.effects.vibrato);
     }
