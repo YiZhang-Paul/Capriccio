@@ -1,5 +1,5 @@
 export enum VibratoType {
-    Wide,
-    Soft,
-    Narrow
+    Wide = 'wide',
+    Soft = 'soft',
+    Narrow = 'narrow'
 }
