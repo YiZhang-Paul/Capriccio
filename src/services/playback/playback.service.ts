@@ -38,7 +38,8 @@ export class PlaybackService {
         const noteDescriptors = sheet.measureDescriptors.map(_ => _.noteDescriptors).flat();
 
         for (const noteDescriptor of noteDescriptors) {
-            sets.push([`0:${beats}`, new PlaybackInstruction(noteDescriptor, new ToneOption())]);
+            const option = new ToneOption(noteService.getDefaultString(noteDescriptor));
+            sets.push([`0:${beats}`, new PlaybackInstruction(noteDescriptor, option)]);
             beats += noteService.getTotalBeats(noteDescriptor);
         }
 
@@ -47,16 +48,11 @@ export class PlaybackService {
 
     private processInstruction(synth: Synth, time: number, instruction: PlaybackInstruction<Note>): void {
         const { noteDescriptor, toneOption } = instruction;
-        // add overlap between notes for smoother transition
-        const duration = Time(this.getNoteDurationString(noteDescriptor)).toSeconds() + 0.05;
-        synth.triggerAttackRelease(noteService.getDisplayText(noteDescriptor), duration, time);
-        toneService.configure(synth, toneOption);
-    }
-
-    private getNoteDurationString(noteDescriptor: NoteDescriptor<Note>): string {
         const { base, option } = noteDescriptor;
         const dots = '.'.repeat(option.dots ?? 0);
-
-        return `${base.value}n${dots}`;
+        // add overlap between notes for smoother transition
+        const duration = Time(`${base.value}n${dots}`).toSeconds() + 0.05;
+        synth.triggerAttackRelease(noteService.getDisplayText(noteDescriptor), duration, time);
+        toneService.configure(synth, toneOption);
     }
 }

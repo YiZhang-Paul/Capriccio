@@ -1,7 +1,9 @@
+import { allNotes, stringNoteRanges } from '@/constants/notes';
 import type { Note } from '@/models/music-sheet/notes/note';
 import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descriptor';
 import { NoteValue } from '@/enums/note-value.enum';
 import { Accidental } from '@/enums/accidental.enum';
+import { StringName } from '@/enums/string-name.enum';
 
 export class NoteService {
 
@@ -19,5 +21,29 @@ export class NoteService {
         const multiplier = new Array(dots).fill(null).reduce((total, _, index) => total + Math.pow(0.5, index + 1), 1);
 
         return NoteValue.Quarter / base.value * multiplier;
+    }
+
+    public getDefaultString(noteDescriptor: NoteDescriptor<Note>): StringName {
+        if (this.getRank(noteDescriptor.base) > this.getRank(stringNoteRanges.A.highest)) {
+            return StringName.E;
+        }
+
+        const strings = Object.keys(stringNoteRanges) as StringName[];
+
+        return strings.find(_ => {
+            const { lowest, thirdPositionHighest } = stringNoteRanges[_];
+
+            return this.containsNote(noteDescriptor.base, lowest, thirdPositionHighest);
+        })!;
+    }
+
+    private getRank(note: Note): number {
+        return (note.octave - 1) * allNotes.length + allNotes.indexOf(note.name) + 1;
+    }
+
+    private containsNote(current: Note, lowest: Note, highest: Note): boolean {
+        const rank = this.getRank(current);
+
+        return rank >= this.getRank(lowest) && rank <= this.getRank(highest);
     }
 }
