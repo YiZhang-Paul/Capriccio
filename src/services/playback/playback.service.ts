@@ -5,11 +5,11 @@ import type { NoteDescriptor } from '@/models/music-sheet/descriptors/note-descr
 import type { SheetDescriptor } from '@/models/music-sheet/descriptors/sheet-descriptor';
 import { ToneOption } from '@/models/playback/options/tone-option';
 import { PlaybackInstruction } from '@/models/playback/playback-instruction';
-import { NoteValue } from '@/enums/note-value.enum';
-import { Accidental } from '@/enums/accidental.enum';
 
+import { NoteService } from '../note/note.service';
 import { ToneService } from '../tone/tone.service';
 
+const noteService = new NoteService();
 const toneService = new ToneService();
 
 export class PlaybackService {
@@ -38,11 +38,8 @@ export class PlaybackService {
         const noteDescriptors = sheet.measureDescriptors.map(_ => _.noteDescriptors).flat();
 
         for (const noteDescriptor of noteDescriptors) {
-            const instruction = new PlaybackInstruction(noteDescriptor, new ToneOption());
-            const { base, option } = noteDescriptor;
-            const multiplier = new Array(option.dots ?? 0).fill(0).reduce((total, _, index) => total + Math.pow(0.5, index + 1), 1);
-            sets.push([`0:${beats}`, instruction]);
-            beats += NoteValue.Quarter / base.value * multiplier;
+            sets.push([`0:${beats}`, new PlaybackInstruction(noteDescriptor, new ToneOption())]);
+            beats += noteService.getTotalBeats(noteDescriptor);
         }
 
         return sets;
@@ -52,16 +49,8 @@ export class PlaybackService {
         const { noteDescriptor, toneOption } = instruction;
         // add overlap between notes for smoother transition
         const duration = Time(this.getNoteDurationString(noteDescriptor)).toSeconds() + 0.05;
-        synth.triggerAttackRelease(this.getNoteDisplayString(noteDescriptor), duration, time);
+        synth.triggerAttackRelease(noteService.getDisplayText(noteDescriptor), duration, time);
         toneService.configure(synth, toneOption);
-    }
-
-    private getNoteDisplayString(noteDescriptor: NoteDescriptor<Note>): string {
-        const { base, override } = noteDescriptor;
-        const accidental = override.accidental ?? base.accidental;
-        const isNatural = accidental === Accidental.Natural || accidental === Accidental.None;
-
-        return `${base.name}${isNatural ? '' : accidental}${base.octave}`;
     }
 
     private getNoteDurationString(noteDescriptor: NoteDescriptor<Note>): string {
