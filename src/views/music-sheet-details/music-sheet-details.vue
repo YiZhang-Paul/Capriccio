@@ -30,12 +30,10 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
+    @import '@/styles/mixins.scss';
+
+    @include flex-row();
+    @include fill-parent();
 
     button {
         margin: 3px;

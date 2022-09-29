@@ -8,13 +8,14 @@ import { defineComponent } from 'vue';
 export default defineComponent({});
 </script>
 
-<style>
+<style lang="scss">
+@import '@/styles/mixins.scss';
+
 html, body, #app {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
+    @include fill-parent();
     background-color: black;
 }
 </style>
